@@ -29,6 +29,19 @@ export function createApp() {
   const tasks = new Map<string, TaskSpec>();
   const executions = new Map<string, ExecutionRecord>();
 
+  app.addHook("onRequest", async (request, reply) => {
+    const requestId = request.headers["x-request-id"] ?? randomUUID();
+    reply.header("x-request-id", String(requestId));
+  });
+
+  app.setErrorHandler((error, _request, reply) => {
+    const message = error instanceof Error ? error.message : "Unhandled error";
+    reply.code(500).send({
+      code: "UNHANDLED_ERROR",
+      message,
+    });
+  });
+
   void app.register(swagger, {
     openapi: {
       info: {
@@ -42,8 +55,13 @@ export function createApp() {
     routePrefix: "/docs",
   });
 
-  app.get("/v1/health/liveness", async () => ({ status: "ok" }));
-  app.get("/v1/health/readiness", async () => ({ status: "ready" }));
+  app.get("/v1/health/liveness", async () => ({ status: "ok", version: "1.0.0" }));
+  app.get("/v1/health/readiness", async () => ({ status: "ready", version: "1.0.0" }));
+  app.get("/v1/contracts/openapi", async () => ({
+    name: "operator.v1",
+    path: "contracts/openapi/operator.v1.yaml",
+    version: "1.0.0",
+  }));
 
   app.post("/v1/tasks", async (request, reply) => {
     const parsed = createTaskInput.safeParse(request.body);
@@ -140,4 +158,6 @@ export function createApp() {
 
   return app;
 }
+
+
 

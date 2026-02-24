@@ -12,6 +12,7 @@ describe("operator API integration", () => {
     });
 
     expect(createResponse.statusCode).toBe(201);
+    expect(createResponse.headers["x-request-id"]).toBeDefined();
     const created = createResponse.json<{ id: string; executionId: string }>();
 
     const getResponse = await app.inject({
@@ -123,6 +124,16 @@ describe("operator API integration", () => {
     expect(liveness.statusCode).toBe(200);
     expect(readiness.statusCode).toBe(200);
 
+    await app.close();
+  });
+
+  it("returns contract metadata endpoint", async () => {
+    const app = createApp();
+    const response = await app.inject({ method: "GET", url: "/v1/contracts/openapi" });
+    expect(response.statusCode).toBe(200);
+    const payload = response.json<{ name: string; version: string }>();
+    expect(payload.name).toBe("operator.v1");
+    expect(payload.version).toBe("1.0.0");
     await app.close();
   });
 });
