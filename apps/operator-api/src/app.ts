@@ -35,9 +35,10 @@ export function createApp() {
   });
 
   app.setErrorHandler((error, _request, reply) => {
+    const message = error instanceof Error ? error.message : "Unhandled error";
     reply.code(500).send({
       code: "UNHANDLED_ERROR",
-      message: error.message,
+      message,
     });
   });
 
