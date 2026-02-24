@@ -1,0 +1,71 @@
+openapi: 3.1.0
+info:
+  title: language-operator API
+  version: 1.0.0
+servers:
+  - url: https://api.language-operator.local
+paths:
+  /v1/tasks:
+    post:
+      summary: Create a task
+      responses:
+        '201':
+          description: Task created
+  /v1/tasks/{taskId}:
+    get:
+      summary: Retrieve a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task payload
+        '404':
+          description: Not found
+  /v1/tasks/{taskId}/cancel:
+    post:
+      summary: Cancel a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cancelled
+  /v1/policies/evaluate:
+    post:
+      summary: Evaluate policy decision
+      responses:
+        '200':
+          description: Policy decision
+  /v1/executions/{executionId}:
+    get:
+      summary: Retrieve execution by id
+      parameters:
+        - in: path
+          name: executionId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution record
+        '404':
+          description: Not found
+  /v1/health/liveness:
+    get:
+      summary: Liveness probe
+      responses:
+        '200':
+          description: Alive
+  /v1/health/readiness:
+    get:
+      summary: Readiness probe
+      responses:
+        '200':
+          description: Ready
