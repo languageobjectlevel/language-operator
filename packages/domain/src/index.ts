@@ -16,3 +16,5 @@ export interface ExecutionRecord {
   result?: string;
   error?: string;
 }
+
+export * from "./task-machine.js";
