@@ -42,8 +42,8 @@ export function createApp() {
     routePrefix: "/docs",
   });
 
-  app.get("/v1/health/liveness", async () => ({ status: "ok" }));
-  app.get("/v1/health/readiness", async () => ({ status: "ready" }));
+  app.get("/v1/health/liveness", async () => ({ status: "ok", version: "1.0.0" }));
+  app.get("/v1/health/readiness", async () => ({ status: "ready", version: "1.0.0" }));
 
   app.post("/v1/tasks", async (request, reply) => {
     const parsed = createTaskInput.safeParse(request.body);
@@ -140,4 +140,5 @@ export function createApp() {
 
   return app;
 }
+
 
