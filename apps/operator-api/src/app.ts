@@ -99,6 +99,9 @@ export function createApp() {
         message: "Task not found",
       });
     }
+    if (task.status === "cancelled") {
+      return { taskId: task.id, status: task.status };
+    }
     if (task.status === "completed" || task.status === "failed") {
       return reply.code(409).send({
         code: "TASK_NOT_CANCELLABLE",
@@ -137,3 +140,4 @@ export function createApp() {
 
   return app;
 }
+
