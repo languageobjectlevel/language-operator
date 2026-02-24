@@ -24,12 +24,15 @@ describe("policy engine", () => {
     const customRules: PolicyRule[] = [
       {
         id: "always-deny",
-        evaluate: (_input: PolicyInput) => ({
+        evaluate: (input: PolicyInput) => {
+          void input;
+          return {
           outcome: "deny",
           reasonCode: "CUSTOM_DENY",
           message: "Denied by custom rule",
           timestamp: new Date().toISOString(),
-        }),
+          };
+        },
       },
     ];
 
