@@ -1,0 +1,12 @@
+{
+  "name": "@language-operator/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Task and execution domain logic",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}
