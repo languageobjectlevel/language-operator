@@ -8,6 +8,7 @@ import { startExecution, transitionTask } from "@language-operator/domain";
 import { createLog } from "@language-operator/observability";
 import type { BudgetWindow } from "@language-operator/policy";
 import { evaluatePolicy } from "@language-operator/policy";
+import { sanitizeUserInput, validateSafeAction } from "@language-operator/security";
 
 const createTaskInput = z.object({
   input: z.string().min(1).max(5000),
@@ -73,9 +74,10 @@ export function createApp() {
     }
 
     const id = randomUUID();
+    const sanitizedInput = sanitizeUserInput(parsed.data.input);
     const task: TaskSpec = {
       id,
-      input: parsed.data.input,
+      input: sanitizedInput,
       createdAt: new Date().toISOString(),
       status: "created",
     };
@@ -138,6 +140,14 @@ export function createApp() {
       return reply.code(400).send({
         code: "INVALID_POLICY_INPUT",
         message: parsed.error.issues.map((issue) => issue.message).join("; "),
+      });
+    }
+
+    const safety = validateSafeAction(parsed.data.action);
+    if (!safety.ok) {
+      return reply.code(403).send({
+        code: "UNSAFE_ACTION_BLOCKED",
+        message: safety.reason ?? "Unsafe action blocked",
       });
     }
 

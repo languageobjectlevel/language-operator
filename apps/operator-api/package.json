@@ -18,6 +18,7 @@
     "@language-operator/domain": "0.1.0",
     "@language-operator/events": "0.1.0",
     "@language-operator/observability": "0.1.0",
-    "@language-operator/policy": "0.1.0"
+    "@language-operator/policy": "0.1.0",
+    "@language-operator/security": "0.1.0"
   }
 }

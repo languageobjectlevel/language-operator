@@ -5,6 +5,7 @@
     { "path": "./packages/events" },
     { "path": "./packages/domain" },
     { "path": "./packages/policy" },
+    { "path": "./packages/security" },
     { "path": "./packages/observability" },
     { "path": "./apps/operator-api" }
   ]

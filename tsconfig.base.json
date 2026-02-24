@@ -19,7 +19,8 @@
       "@language-operator/events": ["packages/events/src/index.ts"],
       "@language-operator/domain": ["packages/domain/src/index.ts"],
       "@language-operator/policy": ["packages/policy/src/index.ts"],
-      "@language-operator/observability": ["packages/observability/src/index.ts"]
+      "@language-operator/observability": ["packages/observability/src/index.ts"],
+      "@language-operator/security": ["packages/security/src/index.ts"]
     }
   }
 }
