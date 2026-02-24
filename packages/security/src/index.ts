@@ -15,7 +15,12 @@ export function hasDangerousCommandPattern(input: string): boolean {
 
 export function sanitizeUserInput(input: string): string {
   return input
-    .replace(/[\u0000-\u001F\u007F]/g, "")
+    .split("")
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code >= 32 && code !== 127;
+    })
+    .join("")
     .trim();
 }
 
