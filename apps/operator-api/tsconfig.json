@@ -10,7 +10,8 @@
     { "path": "../../packages/domain" },
     { "path": "../../packages/events" },
     { "path": "../../packages/observability" },
-    { "path": "../../packages/policy" }
+    { "path": "../../packages/policy" },
+    { "path": "../../packages/security" }
   ],
   "include": ["src/**/*.ts"]
 }
