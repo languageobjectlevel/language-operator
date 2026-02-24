@@ -29,6 +29,18 @@ export function createApp() {
   const tasks = new Map<string, TaskSpec>();
   const executions = new Map<string, ExecutionRecord>();
 
+  app.addHook("onRequest", async (request, reply) => {
+    const requestId = request.headers["x-request-id"] ?? randomUUID();
+    reply.header("x-request-id", String(requestId));
+  });
+
+  app.setErrorHandler((error, _request, reply) => {
+    reply.code(500).send({
+      code: "UNHANDLED_ERROR",
+      message: error.message,
+    });
+  });
+
   void app.register(swagger, {
     openapi: {
       info: {
