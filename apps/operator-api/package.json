@@ -1,0 +1,24 @@
+{
+  "name": "@language-operator/operator-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "fastify": "^5.2.1",
+    "@fastify/swagger": "^9.4.0",
+    "@fastify/swagger-ui": "^5.2.2",
+    "zod": "^3.24.2",
+    "@language-operator/contracts": "0.1.0",
+    "@language-operator/domain": "0.1.0",
+    "@language-operator/events": "0.1.0",
+    "@language-operator/observability": "0.1.0",
+    "@language-operator/policy": "0.1.0",
+    "@language-operator/security": "0.1.0"
+  }
+}
