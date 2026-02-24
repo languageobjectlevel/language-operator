@@ -1,0 +1,86 @@
+asyncapi: 3.0.0
+info:
+  title: language-operator events
+  version: 1.0.0
+channels:
+  operator.task.created.v1:
+    address: operator.task.created.v1
+    messages:
+      taskCreated:
+        $ref: '#/components/messages/TaskCreated'
+  operator.execution.started.v1:
+    address: operator.execution.started.v1
+    messages:
+      executionStarted:
+        $ref: '#/components/messages/ExecutionStarted'
+  operator.execution.completed.v1:
+    address: operator.execution.completed.v1
+    messages:
+      executionCompleted:
+        $ref: '#/components/messages/ExecutionCompleted'
+  operator.execution.failed.v1:
+    address: operator.execution.failed.v1
+    messages:
+      executionFailed:
+        $ref: '#/components/messages/ExecutionFailed'
+  operator.policy.denied.v1:
+    address: operator.policy.denied.v1
+    messages:
+      policyDenied:
+        $ref: '#/components/messages/PolicyDenied'
+components:
+  messages:
+    TaskCreated:
+      payload:
+        type: object
+        required: [taskId, createdAt]
+        properties:
+          taskId:
+            type: string
+          createdAt:
+            type: string
+            format: date-time
+    ExecutionStarted:
+      payload:
+        type: object
+        required: [executionId, taskId, startedAt]
+        properties:
+          executionId:
+            type: string
+          taskId:
+            type: string
+          startedAt:
+            type: string
+            format: date-time
+    ExecutionCompleted:
+      payload:
+        type: object
+        required: [executionId, completedAt]
+        properties:
+          executionId:
+            type: string
+          completedAt:
+            type: string
+            format: date-time
+    ExecutionFailed:
+      payload:
+        type: object
+        required: [executionId, failedAt, reason]
+        properties:
+          executionId:
+            type: string
+          failedAt:
+            type: string
+            format: date-time
+          reason:
+            type: string
+    PolicyDenied:
+      payload:
+        type: object
+        required: [reasonCode, timestamp]
+        properties:
+          reasonCode:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
