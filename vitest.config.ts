@@ -1,4 +1,4 @@
-import { defineConfig, defineProject } from "vitest/config";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
@@ -16,18 +16,4 @@ export default defineConfig({
       },
     },
   },
-  projects: [
-    defineProject({
-      test: {
-        name: "unit",
-        include: ["packages/**/*.test.ts", "apps/**/*.unit.test.ts"],
-      },
-    }),
-    defineProject({
-      test: {
-        name: "integration",
-        include: ["tests/integration/**/*.test.ts"],
-      },
-    }),
-  ],
 });
