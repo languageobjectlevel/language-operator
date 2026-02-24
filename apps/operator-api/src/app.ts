@@ -5,7 +5,7 @@ import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import type { ExecutionRecord, TaskSpec } from "@language-operator/domain";
 import { startExecution, transitionTask } from "@language-operator/domain";
-import { createLog } from "@language-operator/observability";
+import { createLog, MetricsCollector } from "@language-operator/observability";
 import type { BudgetWindow } from "@language-operator/policy";
 import { evaluatePolicy } from "@language-operator/policy";
 import { sanitizeUserInput, validateSafeAction } from "@language-operator/security";
@@ -29,6 +29,7 @@ export function createApp() {
   const app = Fastify({ logger: false });
   const tasks = new Map<string, TaskSpec>();
   const executions = new Map<string, ExecutionRecord>();
+  const metrics = new MetricsCollector();
 
   app.addHook("onRequest", async (request, reply) => {
     const requestId = request.headers["x-request-id"] ?? randomUUID();
@@ -58,6 +59,7 @@ export function createApp() {
 
   app.get("/v1/health/liveness", async () => ({ status: "ok", version: "1.0.0" }));
   app.get("/v1/health/readiness", async () => ({ status: "ready", version: "1.0.0" }));
+  app.get("/v1/metrics", async () => metrics.snapshot());
   app.get("/v1/contracts/openapi", async () => ({
     name: "operator.v1",
     path: "contracts/openapi/operator.v1.yaml",
@@ -87,6 +89,8 @@ export function createApp() {
 
     tasks.set(id, runningTask);
     executions.set(execution.id, execution);
+    metrics.increment("tasks.created");
+    metrics.gauge("tasks.active", tasks.size);
 
     app.log.info(
       createLog({
@@ -131,6 +135,8 @@ export function createApp() {
 
     const cancelledTask = transitionTask(task, "cancelled");
     tasks.set(task.id, cancelledTask);
+    metrics.increment("tasks.cancelled");
+    metrics.gauge("tasks.active", tasks.size);
     return { taskId: cancelledTask.id, status: cancelledTask.status };
   });
 
@@ -152,6 +158,7 @@ export function createApp() {
     }
 
     const decision = evaluatePolicy(parsed.data, budgetWindow);
+    metrics.increment("policy.evaluations");
     return reply.code(200).send(decision);
   });
 
