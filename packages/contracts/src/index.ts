@@ -8,3 +8,18 @@ export interface PaginatedResponse<T> {
   items: T[];
   nextCursor?: string;
 }
+
+export interface TaskResponseContract {
+  id: string;
+  input: string;
+  createdAt: string;
+  status: "created" | "running" | "completed" | "failed" | "cancelled";
+  executionId?: string;
+}
+
+export interface PolicyEvaluationContract {
+  outcome: "allow" | "deny" | "quarantine";
+  reasonCode: string;
+  message: string;
+  timestamp: string;
+}
