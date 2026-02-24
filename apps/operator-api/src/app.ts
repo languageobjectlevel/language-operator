@@ -4,8 +4,10 @@ import swaggerUi from "@fastify/swagger-ui";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import type { ExecutionRecord, TaskSpec } from "@language-operator/domain";
-import type { PolicyDecision } from "@language-operator/policy";
+import { startExecution, transitionTask } from "@language-operator/domain";
 import { createLog } from "@language-operator/observability";
+import type { BudgetWindow } from "@language-operator/policy";
+import { evaluatePolicy } from "@language-operator/policy";
 
 const createTaskInput = z.object({
   input: z.string().min(1).max(5000),
@@ -17,14 +19,10 @@ const evaluatePolicyInput = z.object({
   amountCents: z.number().int().nonnegative().optional(),
 });
 
-function allowByDefault(): PolicyDecision {
-  return {
-    outcome: "allow",
-    reasonCode: "DEFAULT_ALLOW",
-    message: "Policy checks passed",
-    timestamp: new Date().toISOString(),
-  };
-}
+const budgetWindow: BudgetWindow = {
+  hourlyLimitCents: 1_500,
+  dailyLimitCents: 10_000,
+};
 
 export function createApp() {
   const app = Fastify({ logger: false });
@@ -52,7 +50,7 @@ export function createApp() {
     if (!parsed.success) {
       return reply.code(400).send({
         code: "INVALID_INPUT",
-        message: parsed.error.issues.map((i) => i.message).join("; "),
+        message: parsed.error.issues.map((issue) => issue.message).join("; "),
       });
     }
 
@@ -64,24 +62,22 @@ export function createApp() {
       status: "created",
     };
 
-    const execution: ExecutionRecord = {
-      id: randomUUID(),
-      taskId: id,
-      startedAt: new Date().toISOString(),
-      status: "running",
-    };
+    const runningTask = transitionTask(task, "running");
+    const execution = startExecution(id);
 
-    tasks.set(id, task);
+    tasks.set(id, runningTask);
     executions.set(execution.id, execution);
 
-    app.log.info(createLog({
-      level: "info",
-      component: "task.create",
-      message: "Task created",
-      context: { taskId: id },
-    }));
+    app.log.info(
+      createLog({
+        level: "info",
+        component: "task.create",
+        message: "Task created and execution started",
+        context: { taskId: id, executionId: execution.id },
+      }),
+    );
 
-    return reply.code(201).send(task);
+    return reply.code(201).send({ ...runningTask, executionId: execution.id });
   });
 
   app.get<{ Params: { taskId: string } }>("/v1/tasks/:taskId", async (request, reply) => {
@@ -103,8 +99,16 @@ export function createApp() {
         message: "Task not found",
       });
     }
-    task.status = "cancelled";
-    return { taskId: task.id, status: task.status };
+    if (task.status === "completed" || task.status === "failed") {
+      return reply.code(409).send({
+        code: "TASK_NOT_CANCELLABLE",
+        message: "Task is already terminal and cannot be cancelled",
+      });
+    }
+
+    const cancelledTask = transitionTask(task, "cancelled");
+    tasks.set(task.id, cancelledTask);
+    return { taskId: cancelledTask.id, status: cancelledTask.status };
   });
 
   app.post("/v1/policies/evaluate", async (request, reply) => {
@@ -112,11 +116,12 @@ export function createApp() {
     if (!parsed.success) {
       return reply.code(400).send({
         code: "INVALID_POLICY_INPUT",
-        message: parsed.error.issues.map((i) => i.message).join("; "),
+        message: parsed.error.issues.map((issue) => issue.message).join("; "),
       });
     }
-    const decision = allowByDefault();
-    return decision;
+
+    const decision = evaluatePolicy(parsed.data, budgetWindow);
+    return reply.code(200).send(decision);
   });
 
   app.get<{ Params: { executionId: string } }>("/v1/executions/:executionId", async (request, reply) => {
