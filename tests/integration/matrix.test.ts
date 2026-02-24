@@ -22,7 +22,8 @@ const policyCases: PolicyCase[] = [
   {
     name: "deny external shell action",
     payload: { inputSource: "external", action: "shell.execute" },
-    expectedStatus: 403,
+    expectedStatus: 200,
+    expectedOutcome: "deny",
   },
   {
     name: "quarantine operator transfer above hourly threshold",
