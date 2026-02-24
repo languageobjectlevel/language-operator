@@ -153,4 +153,29 @@ describe("operator API integration", () => {
     expect(payload.version).toBe("1.0.0");
     await app.close();
   });
+
+  it("exposes metrics snapshot endpoint", async () => {
+    const app = createApp();
+    await app.inject({
+      method: "POST",
+      url: "/v1/tasks",
+      payload: { input: "Track metrics task" },
+    });
+
+    await app.inject({
+      method: "POST",
+      url: "/v1/policies/evaluate",
+      payload: {
+        inputSource: "operator",
+        action: "task.create",
+      },
+    });
+
+    const metricsResponse = await app.inject({ method: "GET", url: "/v1/metrics" });
+    expect(metricsResponse.statusCode).toBe(200);
+    const metrics = metricsResponse.json<{ counters: Record<string, number> }>();
+    expect(metrics.counters["tasks.created"]).toBeGreaterThanOrEqual(1);
+    expect(metrics.counters["policy.evaluations"]).toBeGreaterThanOrEqual(1);
+    await app.close();
+  });
 });
